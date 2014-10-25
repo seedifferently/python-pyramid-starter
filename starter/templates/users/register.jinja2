@@ -1,0 +1,18 @@
+{% extends "/layout_default.jinja2" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <h1>Register</h1>
+  </div>
+
+  {{ h.form(request.route_path('users', action='register'), id='register-form', hidden_fields=dict(csrf_token=request.session.get_csrf_token()), class_='form-horizontal') }}
+    {{ h.horizontal_form_input('profile.first_name', params['profile.first_name'], errors, required=True) }}
+    {{ h.horizontal_form_input('profile.last_name', params['profile.last_name'], errors, required=True) }}
+    {{ h.horizontal_form_input('email', params['email'], errors, type='email', required=True) }}
+    {{ h.horizontal_form_input('password', '', errors, type='password', required=True) }}
+    {{ h.horizontal_form_input('confirm', '', errors, type='password', required=True) }}
+    {{ h.horizontal_form_submit('Register') }}
+  {{ h.end_form() }}
+{% endblock %}

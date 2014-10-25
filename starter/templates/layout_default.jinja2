@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pyramid App - {% block title %}Home{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ 'starter:static/img/pyramid-16x16.png'|static_path }}">
+    <!-- Latest compiled and minified Bootstrap CSS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <!-- Optional Bootstrap theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="{{ 'starter:static/css/application.css'|static_path }}">
+    {% block stylesheets %}{% endblock %}
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body role="document">
+    <div id="wrap">
+      <!-- Navbar -->
+      <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ request.route_path('root_index') }}">Pyramid App</a>
+          </div>
+
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li class="{% if request.current_route_path() == request.route_path('root_index') %}active{% endif %}">{{ h.link_to('Home', request.route_path('root_index')) }}</li>
+              <li class="{% if request.current_route_path().startswith(request.route_path('root', action='about')) %}active{% endif %}">{{ h.link_to('About', request.route_path('root', action='about')) }}</li>
+              {% if request.current_user and request.current_user.role in ['admin'] %}
+                <li class="{% if request.current_route_path() == request.route_path('admin_index') %}active{% endif %}">{{ h.link_to('Admin', request.route_path('admin_index')) }}</li>
+              {% endif %}
+            </ul>
+            {% if request.current_user %}
+              <div class="navbar-text navbar-right">
+                {{ h.link_to(request.current_user.email, request.route_path('users', action='me'), class_='navbar-link') }} |
+                {{ h.link_to('Logout', request.route_path('users', action='logout'), class_='navbar-link') }}
+              </div>
+            {% elif not request.current_route_path().startswith(request.route_path('users', action='login')) %}
+              <form class="navbar-form navbar-right" method="post" action="{{ request.route_path('users', action='login') }}">
+                <div class="form-group">
+                  <input type="hidden" name="csrf_token" value="{{ request.session.get_csrf_token() }}" />
+                  {% set email = email or h.get_secure_cookie(request, 'email') %}
+                  <input class="form-control" type="email" name="email" maxlength="30" placeholder="Email" {% if email %}value="{{ email }}"{% endif %} />
+                  <input class="form-control" type="password" name="password" placeholder="Password" />
+                </div>
+                <button type="submit" class="btn btn-default">Login</button>
+              </form>
+            {% endif %}
+          </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+      </nav>
+
+      <!-- Begin page content -->
+      <div class="container" role="main">
+        {% if request.session.peek_flash() %}
+          <div class="row">
+            {# Bootstrap 3 flash levels are: info, success, warning, danger #}
+            {% if request.session.peek_flash()[0] is string %}
+              {% set msg, klass = request.session.pop_flash()[0], 'info' %}
+            {% else %}
+              {% set msg, klass = request.session.pop_flash()[0] %}
+            {% endif %}
+            <div id="flash-message" class="alert alert-{{ klass }} alert-dismissable">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              {{ msg }}
+            </div>
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </div>
+
+      <!-- Bottom spacer -->
+      <div>&nbsp;</div>
+    </div><!-- /#wrap -->
+
+    <!-- Begin footer -->
+    <div id="footer" role="footer">
+      <div class="container">
+        <p class="text-muted">&copy; 2014</p>
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!-- Latest compiled and minified Bootstrap JavaScript -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <!-- Application JS -->
+    <script src="{{ 'starter:static/js/application.js'|static_path }}" type="text/javascript"></script>
+    {% block javascripts %}{% endblock %}
+  </body>
+</html>

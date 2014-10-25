@@ -1,0 +1,2 @@
+include *.txt *.ini *.cfg *.rst
+recursive-include starter *.jinja2 *.ico *.png *.gif *.jpg *.pt *.txt *.css *.js *.coffee

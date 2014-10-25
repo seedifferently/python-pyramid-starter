@@ -1,0 +1,20 @@
+{% extends "/layout_default.jinja2" %}
+
+{% block title %}My Info{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <h1>{{ user.full_name }}</h1>
+  </div>
+
+  <dl>
+    <dt>Email:</dt>
+    <dd>{{ user.email }}</dd>
+    <dt>Role:</dt>
+    <dd>{{ user.role }}</dd>
+    <dt>Last Login:</dt>
+    <dd>{{ user.last_login }}</dd>
+    <dt>Authorization Token:</dt>
+    <dd>{{ user.authorization_token }}</dd>
+  </dl>
+{% endblock %}

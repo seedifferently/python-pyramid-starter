@@ -1,0 +1,21 @@
+{% extends "/layout_default.jinja2" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <h1>Login</h1>
+  </div>
+
+  {{ h.form(request.route_path('users', action='login'), hidden_fields=dict(csrf_token=request.session.get_csrf_token(), next=next or ''), class_='form-horizontal') }}
+    {% set email = email or h.get_secure_cookie(request, 'email') %}
+    {{ h.horizontal_form_input('email', email, type='email', required=True) }}
+    {{ h.horizontal_form_input('password', '', type='password', required=True) }}
+    {{ h.horizontal_form_submit('Login') }}
+  {{ h.end_form() }}
+
+  <ul>
+    <li>{{ h.link_to('Forgot Password', request.route_path('users', action='forgot_password')) }}</li>
+    <li>{{ h.link_to('Register', request.route_path('users', action='register')) }}</li>
+  </ul>
+{% endblock %}
