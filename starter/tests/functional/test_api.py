@@ -134,7 +134,7 @@ class TestAPIUsers(FuncTest):
 
         # Test unauthenticated/unauthorized access
         headers = {'Accept': 'application/json'}
-        res = self.testapp.get('/api/users/', headers=headers, status=403)
+        res = self.testapp.get('/api/users/', headers=headers, status=401)
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
@@ -179,7 +179,7 @@ class TestAPIUsers(FuncTest):
         # Test unauthenticated/unauthorized access
         headers = {'Accept': 'application/json'}
         res = self.testapp.post_json('/api/users/', data, headers=headers,
-                                     status=403)
+                                     status=401)
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
@@ -255,7 +255,7 @@ class TestAPIUsers(FuncTest):
         # Test unauthenticated/unauthorized access
         headers = {'Accept': 'application/json'}
         res = self.testapp.get('/api/users/%s' % self.user_user.id,
-                               headers=headers, status=403)
+                               headers=headers, status=401)
         self.assertFalse(res.body)
 
         # Test authenticated/authorized access
@@ -281,7 +281,7 @@ class TestAPIUsers(FuncTest):
         # Test unauthenticated/unauthorized access
         headers = {'Accept': 'application/json'}
         res = self.testapp.post_json('/api/users/%s' % self.user_user.id,
-                                     data, headers=headers, status=403)
+                                     data, headers=headers, status=401)
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
@@ -361,7 +361,7 @@ class TestAPIUsers(FuncTest):
         # Test unauthenticated/unauthorized access
         headers = {'Accept': 'application/json'}
         res = self.testapp.delete_json('/api/users/%s' % self.user_user.id,
-                               headers=headers, status=403)
+                               headers=headers, status=401)
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access

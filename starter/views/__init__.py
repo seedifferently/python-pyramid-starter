@@ -32,9 +32,22 @@ def forbidden(request):
     flash = request.session.flash
     next = request.current_route_path()
 
-    # If accepting JSON, just respond with a 403
+    # If accepting JSON, just respond with a 401 or 403
     if 'application/json' in str(request.accept):
-        return Response(status='403 Forbidden', content_type='application/json')
+        # Prepare the JSON response object
+        response = Response(content_type='application/json')
+        # This is a publicly accessible API
+        response.headers.update({'Access-Control-Allow-Origin': '*'})
+
+        # Set the appropriate response status
+        if request.current_user:
+            response.status = '403 Forbidden'
+        else:
+            response.status = '401 Unauthorized'
+            # Token authorization is expected
+            response.headers.update({'WWW-Authenticate': 'Token'})
+
+        return response
     # Otherwise, return a redirect
     elif request.current_user:
         flash(('You are not authorized to access that location.', 'warning'))
