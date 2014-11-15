@@ -68,7 +68,7 @@ class User(Base):
 
     ## Associations ##
     profile = relationship('UserProfile', backref='user', uselist=False,
-                           cascade='all, delete-orphan', lazy='joined')
+                           cascade='all, delete-orphan')
 
     ## Classmethods ##
     @classmethod
@@ -163,7 +163,7 @@ class UserProfile(Base):
 
     ## Columns ##
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey('users.id'), index=True)
     first_name = Column(Unicode(100))
     last_name = Column(Unicode(100))
     updated = Column(DateTime, default=datetime.utcnow,
@@ -177,6 +177,6 @@ class UserProfile(Base):
 
     ## Special methods ##
     def __init__(self, **kw):
-        self.user_id=kw.get('user_id')
-        self.first_name=kw.get('first_name')
-        self.last_name=kw.get('last_name')
+        self.user_id = kw.get('user_id')
+        self.first_name = kw.get('first_name')
+        self.last_name = kw.get('last_name')

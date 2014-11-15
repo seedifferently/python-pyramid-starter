@@ -160,6 +160,29 @@ class TestAPIUsers(FuncTest):
         self.assertEqual(res.json['meta']['item_count'], 102)
         self.assertEqual(res.json['meta']['items_per_page'], 100)
 
+        # Test authenticated/authorized access -- page 2
+        res = self.testapp.get('/api/users?page=2', headers=headers, status=200)
+        self.assertIn('data', res.json)
+        self.assertEqual(len(res.json['data']), 2)
+        self.assertIn('@example.com', res.json['data'][0]['email'])
+        self.assertIn('meta', res.json)
+        self.assertEqual(res.json['meta']['page'], 2)
+        self.assertEqual(res.json['meta']['page_count'], 2)
+        self.assertEqual(res.json['meta']['item_count'], 102)
+        self.assertEqual(res.json['meta']['items_per_page'], 100)
+
+        # Test authenticated/authorized access -- page 2 (trailing slash)
+        res = self.testapp.get('/api/users/?page=2', headers=headers,
+                               status=200)
+        self.assertIn('data', res.json)
+        self.assertEqual(len(res.json['data']), 2)
+        self.assertIn('@example.com', res.json['data'][0]['email'])
+        self.assertIn('meta', res.json)
+        self.assertEqual(res.json['meta']['page'], 2)
+        self.assertEqual(res.json['meta']['page_count'], 2)
+        self.assertEqual(res.json['meta']['item_count'], 102)
+        self.assertEqual(res.json['meta']['items_per_page'], 100)
+
         # Test authenticated/authorized access -- page 2 (.json extension)
         res = self.testapp.get('/api/users.json?page=2', headers=headers,
                                status=200)
@@ -223,33 +246,41 @@ class TestAPIUsers(FuncTest):
         self.assertEqual(res.json['errors']['email'],
                          'Email address must be unique')
 
-        # Test authenticated/authorized access -- valid data (trailing slash)
-        data['email'] = 'TEST-SLASH@EXAMPLE.COM'
-        res = self.testapp.post_json('/api/users/', data, headers=headers,
+        # Test authenticated/authorized access -- valid data
+        data['email'] = 'TEST@EXAMPLE.COM'
+        res = self.testapp.post_json('/api/users', data, headers=headers,
                                      status=201)
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
         self.assertIn('id', res.json['data'])
-        # Verify email was downcased
-        self.assertEqual(res.json['data']['email'], 'test-slash@example.com')
-
-        # Test authenticated/authorized access -- valid data (.json extension)
-        data['email'] = 'test.json@example.com'
-        res = self.testapp.post_json('/api/users.json', data, headers=headers,
-                                     status=201)
-        self.assertIn('data', res.json)
-        self.assertIn('profile', res.json['data'])
-        self.assertIn('id', res.json['data'])
-        self.assertEqual(res.json['data']['email'], 'test.json@example.com')
+        self.assertEqual(res.json['data']['email'], 'test@example.com')
 
         # Re-read the resource to verify create
         id = res.json['data']['id']
         res = self.testapp.get('/api/users/%s' % id, headers=headers,
                                status=200)
         self.assertIn('data', res.json)
-        self.assertEqual(res.json['data']['email'], 'test.json@example.com')
+        self.assertEqual(res.json['data']['email'], 'test@example.com')
         self.assertEqual(res.json['data']['profile']['first_name'], 'John')
         self.assertEqual(res.json['data']['profile']['last_name'], 'Smith')
+
+        # Test authenticated/authorized access -- valid data (trailing slash)
+        data['email'] = 'test-slash@example.com'
+        res = self.testapp.post_json('/api/users/', data, headers=headers,
+                                     status=201)
+        self.assertIn('data', res.json)
+        self.assertIn('profile', res.json['data'])
+        self.assertIn('id', res.json['data'])
+        self.assertEqual(res.json['data']['email'], 'test-slash@example.com')
+
+        # Test authenticated/authorized access -- valid data (.json extension)
+        data['email'] = 'test-json@example.com'
+        res = self.testapp.post_json('/api/users.json', data, headers=headers,
+                                     status=201)
+        self.assertIn('data', res.json)
+        self.assertIn('profile', res.json['data'])
+        self.assertIn('id', res.json['data'])
+        self.assertEqual(res.json['data']['email'], 'test-json@example.com')
 
     def test_read(self):
         # Test unauthenticated/unauthorized access
@@ -335,26 +366,21 @@ class TestAPIUsers(FuncTest):
                                      data, headers=headers, status=200)
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
-        # Verify email was downcased
         self.assertEqual(res.json['data']['email'], 'test@example.com')
-        self.assertEqual(res.json['data']['profile']['last_name'], 'Smith')
-
-        # Re-read the resource to verify update
-        res = self.testapp.get('/api/users/%s' % self.user_user.id,
-                               headers=headers, status=200)
-        self.assertIn('data', res.json)
-        # Verify email was downcased
-        self.assertEqual(res.json['data']['email'], 'test@example.com')
-        self.assertEqual(res.json['data']['profile']['first_name'], 'John')
         self.assertEqual(res.json['data']['profile']['last_name'], 'Smith')
 
         # Test authenticated/authorized access -- valid data (.json extension)
         data['profile']['last_name'] = 'Last'
-        res = self.testapp.post_json('/api/users/%s.json' % self.user_user.id,
-                                     data, headers=headers, status=200)
+        token = b64encode('%s:%s' % (self.admin_user.email,
+                                     self.admin_user.api_token))
+        res = self.testapp.post_json(
+            '/api/users/%s.json' % self.user_user.id,
+            data,
+            headers=headers,
+            status=200
+        )
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
-        self.assertEqual(res.json['data']['email'], 'test@example.com')
         self.assertEqual(res.json['data']['profile']['last_name'], 'Last')
 
     def test_delete(self):
@@ -453,18 +479,6 @@ class TestAPIUsers(FuncTest):
         self.assertEqual(res.json['data']['profile']['first_name'], 'User')
         self.assertEqual(res.json['data']['profile']['last_name'], 'User')
 
-        # Test valid credentials (.json extension)
-        res = self.testapp.post_json(
-            '/api/users/login.json',
-            {'email': self.user_user.email, 'password': '123456'},
-            headers=headers,
-            status=200
-        )
-        self.assertIn('data', res.json)
-        self.assertIn('profile', res.json['data'])
-        self.assertIn('last_login', res.json['data'])
-        self.assertEqual(res.json['data']['id'], 2)
-
     def test_register(self):
         data = {'email': 'test@example.com', 'password': '654321',
                 'confirm': '654321', 'profile': {'first_name': 'John',
@@ -521,15 +535,6 @@ class TestAPIUsers(FuncTest):
         self.assertEqual(res.json['data']['profile']['first_name'], 'John')
         self.assertEqual(res.json['data']['profile']['last_name'], 'Smith')
 
-        # Test valid data (.json extension)
-        data['email'] = 'test-json@example.com'
-        res = self.testapp.post_json('/api/users/register.json', data,
-                                     headers=headers, status=200)
-        self.assertIn('data', res.json)
-        self.assertIn('profile', res.json['data'])
-        self.assertIn('id', res.json['data'])
-        self.assertEqual(res.json['data']['email'], 'test-json@example.com')
-
     def test_forgot_password(self):
         # Test missing email
         headers = {'Accept': 'application/json'}
@@ -569,10 +574,10 @@ class TestAPIUsers(FuncTest):
         )
         self.assertEqual(res.json['data'], None)
 
-        # Test valid email (.json extension)
+        # Test valid email
         headers = {'Accept': 'application/json'}
         res = self.testapp.post_json(
-            '/api/users/forgot_password.json',
+            '/api/users/forgot_password',
             {'email': self.user_user.email},
             headers=headers,
             status=200
@@ -624,14 +629,14 @@ class TestAPIUsers(FuncTest):
                          'Fields do not match')
         self.assertEqual(res.json['data'], None)
 
-        # Test valid data (.json extension)
+        # Test valid data
         data['confirm'] = '654321'
         data['token'] = self.user_user.password_reset_token
         with transaction.manager:
             self.user_user.update({
                 'password_reset_sent': datetime.datetime.utcnow()
             })
-        res = self.testapp.post_json('/api/users/reset_password.json', data,
+        res = self.testapp.post_json('/api/users/reset_password', data,
                                      headers=headers, status=200)
         self.assertEqual(res.json['data'], None)
         self.assertEqual(res.json['errors'], {})

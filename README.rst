@@ -2,7 +2,10 @@
 Welcome to Starter
 ================================================================================
 
-Starter is an advanced Python web application. It utilizes a "full-stack" Python
+**Note: This code is part of a collection of various starter examples. See more
+at: https://github.com/seedifferently/starters**
+
+This is an opinionated Python web application. It utilizes a "full-stack" Python
 web development framework comprised of the following packages:
 
 Pyramid_
