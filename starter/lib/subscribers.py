@@ -26,10 +26,10 @@ def get_current_user(request):
             credentials = get_token_credentials(request)
 
             if credentials:
-                return User.filter_by(email=credentials[0],
-                                      api_token=credentials[1]).first()
+                return User.first(User.email == userid,
+                                  User.api_token == credentials['token'])
         else:
             # We're using AuthTkt Authentication
-            return User.filter_by(email=userid).first()
+            return User.first(User.email == userid)
 
     return None

@@ -33,32 +33,39 @@ def get_role(userid, request):
 def get_token_credentials(request):
     """Helper method for parsing API token credentials."""
     authorization = request.headers.get('Authorization')
-    if not authorization:
-        return None
+
     try:
         authmeth, auth = authorization.split(' ', 1)
-    except ValueError: # not enough values to unpack
+    except:
         return None
-    if authmeth.lower() != 'token':
-        return None
+    else:
+        # Normalize "authmeth"
+        authmeth = authmeth.lower()
+        # Make sure "auth" doesn't have any unwanted whitespace
+        auth = auth.strip()
 
-    try:
-        authbytes = b64decode(auth.strip())
-    except (TypeError, binascii.Error): # can't decode
-        return None
+    if authmeth == 'token':
+        # Parse traditional token value
+        try:
+            authbytes = b64decode(auth)
+        except (TypeError, binascii.Error): # can't decode
+            return None
 
-    # try utf-8 first, then latin-1; see discussion in
-    # https://github.com/Pylons/pyramid/issues/898
-    try:
-        auth = authbytes.decode('utf-8')
-    except UnicodeDecodeError:
-        auth = authbytes.decode('latin-1')
+        # Try utf-8 first, then latin-1; see discussion in
+        # https://github.com/Pylons/pyramid/issues/898
+        try:
+            auth = authbytes.decode('utf-8')
+        except UnicodeDecodeError:
+            auth = authbytes.decode('latin-1')
 
-    try:
-        userid, token = auth.split(':', 1)
-    except ValueError: # not enough values to unpack
-        return None
-    return userid, token
+        try:
+            userid, token = auth.split(':', 1)
+        except ValueError: # not enough values to unpack
+            return None
+
+        return dict(userid=userid, token=token)
+
+    return None
 
 class TokenOrAuthTktAuthenticationPolicy(AuthTktAuthenticationPolicy):
     """AuthenticationPolicy for either an API token, or AuthTkt cookie."""
@@ -68,7 +75,7 @@ class TokenOrAuthTktAuthenticationPolicy(AuthTktAuthenticationPolicy):
             credentials = get_token_credentials(request)
 
             if credentials:
-                return credentials[0]
+                return credentials['userid']
         else:
             # Check for the userid within the ``auth_tkt`` cookie
             credentials = self.cookie.identify(request)

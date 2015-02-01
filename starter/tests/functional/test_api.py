@@ -1,5 +1,8 @@
 import datetime
 import transaction
+
+from pyramid.authentication import b64encode
+from pyramid.compat import native_
 from pyramid_mailer import get_mailer
 
 from . import FuncTest
@@ -54,6 +57,31 @@ class TestAPIRoot(FuncTest):
     def test_me(self): # /api/me.json
         # Test unauthenticated/unauthorized access
         headers = {'Accept': 'application/json'}
+        res = self.testapp.get('/api/me.json', headers=headers, status=200)
+        self.assertEqual(res.json, {'data': None})
+
+        # Test unauthenticated access -- invalid scheme
+        headers = {'Accept': 'application/json',
+                   'Authorization': 'Test Test'}
+        res = self.testapp.get('/api/me.json', headers=headers, status=200)
+        self.assertEqual(res.json, {'data': None})
+
+        # Test unauthenticated access -- missing token
+        headers = {'Accept': 'application/json',
+                   'Authorization': 'Token'}
+        res = self.testapp.get('/api/me.json', headers=headers, status=200)
+        self.assertEqual(res.json, {'data': None})
+
+        # Test unauthenticated access -- mangled traditional token
+        headers = {'Accept': 'application/json',
+                   'Authorization': 'Token +='}
+        res = self.testapp.get('/api/me.json', headers=headers, status=200)
+        self.assertEqual(res.json, {'data': None})
+
+        token = b64encode('%s%s' % (self.user_user.email,
+                                    self.user_user.api_token))
+        headers = {'Accept': 'application/json',
+                   'Authorization': 'Token %s' % native_(token)}
         res = self.testapp.get('/api/me.json', headers=headers, status=200)
         self.assertEqual(res.json, {'data': None})
 
