@@ -25,7 +25,7 @@ install_requires = [
     'cryptacular',                # Secure user password hashing
     'marshmallow',                # Simplified JSON serialization
     'formencode >= 1.3.0a1',      # Input validation and form generation
-    'webhelpers2 >= 2.0rc1',       # Utility functions for web applications
+    'webhelpers2 == 2.0rc2',      # Utility functions for web applications
     'paginate_sqlalchemy >= 0.2', # Divides large lists of items into pages
     'html2text',                  # Turn HTML into equivalent Markdown
 ]

@@ -13,41 +13,25 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime, Unicode
 from sqlalchemy.ext.hybrid import hybrid_property
-from marshmallow import Serializer, fields
+from marshmallow import Schema
 
 # Pyramid imports
 from pyramid.compat import native_
 from pyramid.authentication import b64encode
 
 # Project imports
-from . import Base, DBSession, CaseInsensitiveComparator
+from . import (DBSession, Base, ModelMixin, CaseInsensitiveComparator,
+               JSONFieldOpts)
 from ..lib.helpers import generate_secret
 
 
-__all__ = ['User', 'UserProfile']
+__all__ = ['User', 'UserProfile', 'UserJSON', 'UserProfileJSON']
 
 crypt = bcrypt.BCRYPTPasswordManager()
 
 
-# User serializer class
-class UserSerializer(Serializer):
-    """Marshmallow serializer for converting User records to JSON."""
-    id = fields.Integer()
-    email = fields.String()
-    role = fields.String()
-    last_login = fields.DateTime('iso')
-    updated = fields.DateTime('iso')
-    created = fields.DateTime('iso')
-
-    class Profile(Serializer):
-        first_name = fields.String()
-        last_name = fields.String()
-
-    profile = fields.Nested(Profile)
-
-
 # User model class
-class User(Base):
+class User(ModelMixin, Base):
     """
     The application's User model.
     """
@@ -72,30 +56,6 @@ class User(Base):
 
     ## Classmethods ##
     @classmethod
-    def all(cls):
-        """Return all objects."""
-        return cls.query.all()
-
-    @classmethod
-    def count(cls):
-        """Return a count of all objects."""
-        return cls.query.count()
-
-    @classmethod
-    def filter_by(cls, **kw):
-        """Filter objects by ``kw``."""
-        return cls.query.filter_by(**kw)
-
-    @classmethod
-    def find(cls, id):
-        """
-        Return the object whose id is ``id``.
-
-        If no object is found, a ``NoResultFound`` is raised.
-        """
-        return cls.filter_by(id=id).one()
-
-    @classmethod
     def by_email(cls, email):
         """
         Return the object whose email address is ``email``.
@@ -105,13 +65,10 @@ class User(Base):
         return cls.filter_by(email=email).one()
 
     ## Instance methods ##
-    def update(self, params):
-        return User.filter_by(id=self.id).update(params)
-
     def check_password(self, value):
         return crypt.check(self.password, value)
 
-    ## Ojbect properties ##
+    ## Object properties ##
     @property
     def full_name(self):
         return self.profile.full_name
@@ -150,12 +107,20 @@ class User(Base):
     def __repr__(self):
         return '<User: %s>' % (self.email)
 
-    def __json__(self, request):
-        return UserSerializer(self).data
+# User JSON serializer class
+class UserJSON(Schema):
+    """Marshmallow schema mapper for serializing objects as JSON."""
+    OPTIONS_CLASS = JSONFieldOpts
+
+    class Meta:
+        supported_fields = list(User._sa_class_manager.keys())
+        fields = User.__table__.columns.keys()
+        exclude = ('api_token', 'password', 'password_reset_sent',
+                   'password_reset_token')
 
 
 # UserProfile model class
-class UserProfile(Base):
+class UserProfile(ModelMixin, Base):
     """
     Application user's profile model.
     """
@@ -170,7 +135,7 @@ class UserProfile(Base):
                      onupdate=datetime.utcnow)
     created = Column(DateTime, default=datetime.utcnow)
 
-    ## Ojbect properties ##
+    ## Object properties ##
     @property
     def full_name(self):
         return "%s %s" % (self.first_name, self.last_name)
@@ -180,3 +145,12 @@ class UserProfile(Base):
         self.user_id = kw.get('user_id')
         self.first_name = kw.get('first_name')
         self.last_name = kw.get('last_name')
+
+# User Profile JSON serializer class
+class UserProfileJSON(Schema):
+    """Marshmallow schema mapper for serializing objects as JSON."""
+    OPTIONS_CLASS = JSONFieldOpts
+
+    class Meta:
+        supported_fields = list(UserProfile._sa_class_manager.keys())
+        fields = UserProfile.__table__.columns.keys()

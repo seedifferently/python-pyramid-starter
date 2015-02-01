@@ -1,7 +1,5 @@
 import datetime
 import transaction
-from pyramid.authentication import b64encode
-from pyramid.compat import native_
 from pyramid_mailer import get_mailer
 
 from . import FuncTest
@@ -60,10 +58,9 @@ class TestAPIRoot(FuncTest):
         self.assertEqual(res.json, {'data': None})
 
         # Test authenticated/authorized access
-        token = b64encode('%s:%s' % (self.user_user.email,
-                                     self.user_user.api_token))
+        token = self.user_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.get('/api/me.json', headers=headers, status=200)
         self.assertIn('data', res.json)
         self.assertIn('email', res.json['data'])
@@ -138,18 +135,16 @@ class TestAPIUsers(FuncTest):
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
-        token = b64encode('%s:%s' % (self.user_user.email,
-                                     self.user_user.api_token))
+        token = self.user_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.get('/api/users/', headers=headers, status=403)
         self.assertFalse(res.body)
 
         # Test authenticated/authorized access
-        token = b64encode('%s:%s' % (self.admin_user.email,
-                                     self.admin_user.api_token))
+        token = self.admin_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.get('/api/users/', headers=headers, status=200)
         self.assertIn('data', res.json)
         self.assertEqual(len(res.json['data']), 100)
@@ -206,19 +201,17 @@ class TestAPIUsers(FuncTest):
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
-        token = b64encode('%s:%s' % (self.user_user.email,
-                                     self.user_user.api_token))
+        token = self.user_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.post_json('/api/users/', data, headers=headers,
                                      status=403)
         self.assertFalse(res.body)
 
         # Test authenticated/authorized access -- missing data
-        token = b64encode('%s:%s' % (self.admin_user.email,
-                                     self.admin_user.api_token))
+        token = self.admin_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.post_json('/api/users', {}, headers=headers,
                                      status=422)
         self.assertIn('data', res.json)
@@ -248,8 +241,8 @@ class TestAPIUsers(FuncTest):
 
         # Test authenticated/authorized access -- valid data
         data['email'] = 'TEST@EXAMPLE.COM'
-        res = self.testapp.post_json('/api/users', data, headers=headers,
-                                     status=201)
+        res = self.testapp.post_json('/api/users?include=profile', data,
+                                     headers=headers, status=201)
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
         self.assertIn('id', res.json['data'])
@@ -257,8 +250,8 @@ class TestAPIUsers(FuncTest):
 
         # Re-read the resource to verify create
         id = res.json['data']['id']
-        res = self.testapp.get('/api/users/%s' % id, headers=headers,
-                               status=200)
+        res = self.testapp.get('/api/users/%s?include=profile' % id,
+                               headers=headers, status=200)
         self.assertIn('data', res.json)
         self.assertEqual(res.json['data']['email'], 'test@example.com')
         self.assertEqual(res.json['data']['profile']['first_name'], 'John')
@@ -266,8 +259,8 @@ class TestAPIUsers(FuncTest):
 
         # Test authenticated/authorized access -- valid data (trailing slash)
         data['email'] = 'test-slash@example.com'
-        res = self.testapp.post_json('/api/users/', data, headers=headers,
-                                     status=201)
+        res = self.testapp.post_json('/api/users/?include=profile', data,
+                                     headers=headers, status=201)
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
         self.assertIn('id', res.json['data'])
@@ -275,8 +268,8 @@ class TestAPIUsers(FuncTest):
 
         # Test authenticated/authorized access -- valid data (.json extension)
         data['email'] = 'test-json@example.com'
-        res = self.testapp.post_json('/api/users.json', data, headers=headers,
-                                     status=201)
+        res = self.testapp.post_json('/api/users.json?include=profile', data,
+                                     headers=headers, status=201)
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
         self.assertIn('id', res.json['data'])
@@ -290,10 +283,9 @@ class TestAPIUsers(FuncTest):
         self.assertFalse(res.body)
 
         # Test authenticated/authorized access
-        token = b64encode('%s:%s' % (self.user_user.email,
-                                     self.user_user.api_token))
+        token = self.user_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.get('/api/users/%s' % self.user_user.id,
                                headers=headers, status=200)
         self.assertIn('data', res.json)
@@ -316,19 +308,17 @@ class TestAPIUsers(FuncTest):
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
-        token = b64encode('%s:%s' % (self.user_user.email,
-                                     self.user_user.api_token))
+        token = self.user_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.post_json('/api/users/%s' % self.user_user.id,
                                      data, headers=headers, status=403)
         self.assertFalse(res.body)
 
         # Test authenticated/authorized access -- invalid request method
-        token = b64encode('%s:%s' % (self.admin_user.email,
-                                     self.admin_user.api_token))
+        token = self.admin_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.post_json('/api/users/%s/no' % self.user_user.id,
                                      data, headers=headers, status=404)
 
@@ -362,8 +352,12 @@ class TestAPIUsers(FuncTest):
 
         # Test authenticated/authorized access -- valid data
         data['email'] = 'TEST@EXAMPLE.COM'
-        res = self.testapp.post_json('/api/users/%s' % self.user_user.id,
-                                     data, headers=headers, status=200)
+        res = self.testapp.post_json(
+            '/api/users/%s?include=profile' % self.user_user.id,
+            data,
+            headers=headers,
+            status=200
+        )
         self.assertIn('data', res.json)
         self.assertIn('profile', res.json['data'])
         self.assertEqual(res.json['data']['email'], 'test@example.com')
@@ -371,10 +365,8 @@ class TestAPIUsers(FuncTest):
 
         # Test authenticated/authorized access -- valid data (.json extension)
         data['profile']['last_name'] = 'Last'
-        token = b64encode('%s:%s' % (self.admin_user.email,
-                                     self.admin_user.api_token))
         res = self.testapp.post_json(
-            '/api/users/%s.json' % self.user_user.id,
+            '/api/users/%s.json?include=profile' % self.user_user.id,
             data,
             headers=headers,
             status=200
@@ -391,19 +383,17 @@ class TestAPIUsers(FuncTest):
         self.assertFalse(res.body)
 
         # Test authenticated/unauthorized access
-        token = b64encode('%s:%s' % (self.user_user.email,
-                                     self.user_user.api_token))
+        token = self.user_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.delete_json('/api/users/%s' % self.user_user.id,
                                headers=headers, status=403)
         self.assertFalse(res.body)
 
         # Test authenticated/authorized access -- invalid request method
-        token = b64encode('%s:%s' % (self.admin_user.email,
-                                     self.admin_user.api_token))
+        token = self.admin_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
+                   'Authorization': 'Token %s' % token}
         res = self.testapp.get('/api/users/%s/test' % self.user_user.id,
                                headers=headers, status=404)
 
@@ -524,12 +514,11 @@ class TestAPIUsers(FuncTest):
 
         # Re-read the resource to verify register
         id = res.json['data']['id']
-        token = b64encode('%s:%s' % (self.admin_user.email,
-                                     self.admin_user.api_token))
+        token = self.admin_user.authorization_token
         headers = {'Accept': 'application/json',
-                   'Authorization': 'Token %s' % native_(token)}
-        res = self.testapp.get('/api/users/%s' % id, headers=headers,
-                               status=200)
+                   'Authorization': 'Token %s' % token}
+        res = self.testapp.get('/api/users/%s?include=profile' % id,
+                               headers=headers, status=200)
         self.assertIn('data', res.json)
         self.assertEqual(res.json['data']['email'], 'test@example.com')
         self.assertEqual(res.json['data']['profile']['first_name'], 'John')

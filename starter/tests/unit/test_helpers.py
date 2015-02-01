@@ -26,8 +26,17 @@ class HelpersUnitTest(TestCase):
                                   options=[('first', 'first')]),
             '<div class="form-group"><label class="control-label col-sm-2" ' +
             'for="name">Name</label><div class="col-sm-10 col-md-8"><select ' +
+            'class="form-control " id="name" name="name">\n<option>first' +
+            '</option>\n</select></div></div>'
+        )
+
+        self.assertEqual(
+            horizontal_form_input('name', type='select',
+                                  options=[('1st', 'first')]),
+            '<div class="form-group"><label class="control-label col-sm-2" ' +
+            'for="name">Name</label><div class="col-sm-10 col-md-8"><select ' +
             'class="form-control " id="name" name="name">\n<option value=' +
-            '"first">first</option>\n</select></div></div>'
+            '"1st">first</option>\n</select></div></div>'
         )
 
     def test_horizontal_form_submit(self):

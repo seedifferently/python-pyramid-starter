@@ -1,7 +1,13 @@
-# vim:fileencoding=utf-8:ai:ts=4:sts:et:sw=4:tw=80:
-from unittest import TestCase
+# System imports
 import transaction
+from unittest import TestCase
+
+# 3rd Party imports
+from sqlalchemy.orm.exc import NoResultFound
+
+# Project imports
 from starter.models import *
+from starter.models.seeds import *
 
 class TestUser(TestCase):
     def setUp(self):
@@ -39,20 +45,38 @@ class TestUser(TestCase):
             User.query.delete()
 
     def test_classmethods(self):
+        # User.find()
+        self.assertEqual(User.find(self.admin_user.id), self.admin_user)
+
+        with self.assertRaises(NoResultFound) as cm:
+            User.find(9999)
+        self.assertEqual('%s' % cm.exception,
+                         'No User was found with primary key of: 9999')
+
+        # User.first()
+        self.assertEqual(User.first(User.email == 'admin@example.com'),
+                         self.admin_user)
+
         # User.all()
-        self.assertEqual(len(User.all()), 2)
-        self.assertIn(self.admin_user, User.all())
-        self.assertIn(self.user_user, User.all())
+        all_objs = User.all()
+        self.assertEqual(len(all_objs), 2)
+        self.assertIn(self.admin_user, all_objs)
+        self.assertIn(self.user_user, all_objs)
 
         # User.count()
         self.assertEqual(User.count(), 2)
+
+        # User.filter()
+        self.assertEqual(User.filter(User.email == 'admin@example.com').one(),
+                         self.admin_user)
 
         # User.filter_by()
         self.assertEqual(User.filter_by(email='admin@example.com').one(),
                          self.admin_user)
 
-        # User.find()
-        self.assertEqual(User.find(self.admin_user.id), self.admin_user)
+        # User.order_by()
+
+        # User.lazy()
 
         # User.by_email()
         self.assertEqual(User.by_email('admin@example.com'), self.admin_user)
@@ -81,3 +105,6 @@ class TestUser(TestCase):
             '%s' % self.admin_user,
             '<User: %s>' % self.admin_user.email
         )
+
+        # __init__
+        self.assertEqual(int(self.admin_user), self.admin_user.id)
