@@ -41,7 +41,7 @@ Environment Setup
 ^^^^^^^^^^^^^^^^^
 
 It is highly recommended that you use a Python environment manager such as
-pyenv_ or virtualenvwrapper_ to manage your Python environment.
+pyenv_ or virtualenvwrapper_ to manage your Python development environment.
 
 
 .. _pyenv: http://github.com/yyuu/pyenv#installation
@@ -65,8 +65,8 @@ project's root directory::
 Database Initialization
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Before starting the app, you'll probably want to to execute the database
-initialization script by running::
+Before starting the app, you'll want to execute the database initialization
+script by running::
 
     initialize_starter_db development.ini
 
@@ -85,6 +85,31 @@ In the root directory of the project, simply run::
 You may also want to specify the ``--reload`` option to monitor for changes, or
 the ``--daemon`` option to run in daemon (background) mode. Type ``pserve -h``
 for more information.
+
+
+Interactive Shell
+^^^^^^^^^^^^^^^^^
+
+Pyramid's `interactive shell`_ can be run using the ``pshell`` command, and will
+take advantage of IPython's enhancements if you have IPython_ installed::
+
+    pip install ipython
+    pshell development.ini
+
+The Starter project provides shortcut access to its models via the ``m`` object
+within the interactive shell, e.g.::
+
+    >>> user = m.User.first()
+    >>> user.email
+    user@example.com
+    >>> m.User.all()
+    [<User: user@example.com>,
+     <User: superuser@example.com>,
+     <User: admin@example.com>,
+     <User: testing@example.com>]
+
+.. _interactive shell: http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/commandline.html#the-interactive-shell
+.. _IPython: http://ipython.org/
 
 
 --------------------------------------------------------------------------------
