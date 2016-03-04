@@ -40,8 +40,8 @@ Getting Started
 Environment Setup
 ^^^^^^^^^^^^^^^^^
 
-It is highly recommended that you use a Python environment manager such as
-pyenv_ or virtualenvwrapper_ to manage your Python development environment.
+It is recommended that you use a Python environment manager such as pyenv_ or
+virtualenvwrapper_ to manage your Python development environment.
 
 
 .. _pyenv: http://github.com/yyuu/pyenv#installation
@@ -51,7 +51,7 @@ pyenv_ or virtualenvwrapper_ to manage your Python development environment.
 Project Initialization
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Once you have correctly set up and activated your Python environment, you can
+Once you have correctly set up and activated your Python environment, you should
 initialize the project and its dependencies by running this command in the
 project's root directory::
 
@@ -69,6 +69,13 @@ Before starting the app, you'll want to execute the database initialization
 script by running::
 
     initialize_starter_db development.ini
+
+This will set up the initial database structure, as well as create a few example
+users with the following email/password combinations:
+
+- ``user@example.com`` / ``user``
+- ``superuser@example.com`` / ``superuser``
+- ``admin@example.com`` / ``admin``
 
 
 --------------------------------------------------------------------------------
@@ -185,17 +192,13 @@ generation.
 Building the Docs
 ^^^^^^^^^^^^^^^^^
 
-First make sure the full documentation dependencies have been met by running::
-
-    pip install -e .[docs]
-
-Then you'll need to initialize the git submodule containing the documentation's
+First you'll need to initialize the git submodule containing the documentation's
 output theme by running::
 
     git submodule init
     git submodule update
 
-Next, ``cd`` into the ``docs`` directory and run::
+Then, ``cd`` into the ``docs`` directory and run::
 
     make html
 
