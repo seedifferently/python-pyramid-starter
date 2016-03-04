@@ -7,12 +7,60 @@
     <h1>Register</h1>
   </div>
 
-  {{ h.form(request.route_path('users', action='register'), id='register-form', hidden_fields=dict(csrf_token=request.session.get_csrf_token()), class_='form-horizontal') }}
-    {{ h.horizontal_form_input('profile.first_name', params['profile.first_name'], errors, required=True) }}
-    {{ h.horizontal_form_input('profile.last_name', params['profile.last_name'], errors, required=True) }}
-    {{ h.horizontal_form_input('email', params['email'], errors, type='email', required=True) }}
-    {{ h.horizontal_form_input('password', '', errors, type='password', required=True) }}
-    {{ h.horizontal_form_input('confirm', '', errors, type='password', required=True) }}
-    {{ h.horizontal_form_submit('Register') }}
-  {{ h.end_form() }}
+  <form action="{{ request.route_path('users', action='register') }}" class="form-horizontal" id="register-form" method="post">
+    <div style="display: none;">
+      <input name="csrf_token" type="hidden" value="{{ request.session.get_csrf_token() }}" />
+    </div>
+
+    <div class="form-group {{ 'has-error' if errors['profile.first_name'] }}">
+      <label class="control-label col-sm-2 required" for="profile.first_name">First Name</label>
+      <div class="col-sm-10 col-md-8">
+        <input id="profile_first_name " class="form-control" type="text" name="profile.first_name" value="{{ params['profile.first_name'] or '' }}" placeholder="First Name" required />
+        {% if errors['profile.first_name'] %}
+          <span class="help-block">{{ errors['profile.first_name'] }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors['profile.last_name'] }}">
+      <label class="control-label col-sm-2 required" for="profile.last_name">Last Name</label>
+      <div class="col-sm-10 col-md-8">
+        <input id="profile_last_name " class="form-control" type="text" name="profile.last_name" value="{{ params['profile.last_name'] or '' }}" placeholder="Last Name" required />
+        {% if errors['profile.last_name'] %}
+          <span class="help-block">{{ errors['profile.last_name'] }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors['email'] }}">
+      <label class="control-label col-sm-2 required" for="email">Email</label>
+      <div class="col-sm-10 col-md-8">
+        <input id="email" class="form-control" type="email" name="email" value="{{ params['email'] or '' }}" placeholder="Email" required />
+        {% if errors['email'] %}
+          <span class="help-block">{{ errors['email'] }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors['password'] }}">
+      <label class="control-label col-sm-2 required" for="password">Password</label>
+      <div class="col-sm-10 col-md-8">
+        <input id="password" class="form-control" type="password" name="password" value="" placeholder="Password" required />
+        {% if errors['password'] %}
+          <span class="help-block">{{ errors['password'] }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors['confirm'] }}">
+      <label class="control-label col-sm-2 required" for="confirm">Confirm</label>
+      <div class="col-sm-10 col-md-8">
+        <input id="confirm" class="form-control" type="password" name="confirm" value="" placeholder="Confirm" required />
+        {% if errors['confirm'] %}
+          <span class="help-block">{{ errors['confirm'] }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button class="btn btn-default" type="submit">Register</button>
+      </div>
+    </div>
+  </form>
 {% endblock %}

@@ -72,6 +72,11 @@ def main(global_config, **settings):
     # .lib.subscribers.before_renderer
     config.add_subscriber(before_renderer, BeforeRender)
 
+    # Run package includes
+    config.include('pyramid_tm')
+    config.include('pyramid_handlers')
+    config.include('pyramid_jinja2')
+
     # Register routes
     config.include(routes)
 

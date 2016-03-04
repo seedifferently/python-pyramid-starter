@@ -1,1 +1,30 @@
--e .
+# Application framework
+pyramid              ~= 1.6.1     # Pyramid web framework
+
+# Datastore/SQL packages
+#psycopg2             ~= 2.6.1     # Python PostgreSQL driver
+SQLAlchemy           ~= 1.0.12    # A powerful and flexible SQL toolkit and ORM
+pyramid_tm           == 0.12      # These two are for Pyramid's SQLAlchemy
+zope.sqlalchemy      ~= 0.7.6     # transaction management.
+paginate             == 0.5.2     # Divides large lists of items into pages
+paginate_sqlalchemy  == 0.2       # Paginate module SQLAlchemy extension
+
+# 3rd party packages
+Jinja2               ~= 2.8.0     # Pure Python template engine
+cryptacular          ~= 1.4.1     # Secure user password hashing
+PyJWT                ~= 1.4.0     # JSON Web Token implementation in Python
+marshmallow          ~= 2.6.0     # Simplified JSON serialization
+formencode           == 1.3.0     # Input validation and form generation
+WebHelpers2          ~= 2.0.0     # Helper functions for webapps
+html2text            == 2016.1.8  # Turn HTML into equivalent Markdown
+
+# 3rd party service packages
+
+# Pyramid add-on packages
+pyramid_handlers     == 0.5       # Support for "Controller"-style view logic
+pyramid_jinja2       ~= 2.6.1     # Jinja2 template bindings
+pyramid_mailer       ~= 0.14.1    # Helper module for sending emails
+pyramid_debugtoolbar ~= 2.4.2     # Interactive debugging for app development
+
+# FIXME: http://stackoverflow.com/a/23866880
+repoze.sendmail      == 4.1

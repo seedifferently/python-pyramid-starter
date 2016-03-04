@@ -1,0 +1,14 @@
+# Make sure the application requirements are loaded
+-r requirements.txt
+
+# Dev packages
+ipython            # Python command shell for interactive computing
+
+# Testing packages
+nose     ~= 1.3.7  # Extends unittest to make testing easier
+coverage ~= 4.0.3  # Code coverage measurement for Python
+webtest  ~= 2.0.20 # Helper to test WSGI applications
+pyquery  ~= 1.2.11 # A jquery-like library for python
+
+# Documentation packages
+sphinx   ~= 1.3.5  # Python documentation generator

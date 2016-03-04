@@ -55,7 +55,7 @@ Once you have correctly set up and activated your Python environment, you can
 initialize the project and its dependencies by running this command in the
 project's root directory::
 
-    python setup.py develop
+    pip install -r requirements_dev.txt -e .
 
 
 .. note:: If you are using ``pyenv`` to manage your Python environment
@@ -151,14 +151,7 @@ Testing with nose
 ^^^^^^^^^^^^^^^^^
 
 nose_ is a package which extends Python's basic testing functionality in various
-ways.
-
-To run nose, first make sure the full testing dependencies have been met by
-running::
-
-    pip install -e .[tests]
-
-Once the install has finished, you can run nose by typing::
+ways. You can run nose by typing::
 
     nosetests
 
